@@ -1,0 +1,143 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Edition - Represents each newspaper edition
+model Edition {
+  id        String   @id @default(cuid())
+  date      DateTime @unique // The actual date of the edition
+  editionNumber Int     @unique // Edition number (1, 2, 3, etc)
+
+  // Publication info
+  publication String   @default("seva-goa") // Publication name
+  title       String?  // Optional title
+  description String?  // Optional description
+
+  // Image storage
+  coverImage String?   // URL to cover image
+
+  // Relations
+  sections   Section[]
+  images     EditionImage[]
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Section - Represents sections within an edition
+model Section {
+  id        String   @id @default(cuid())
+  editionId String
+  edition   Edition  @relation(fields: [editionId], references: [id], onDelete: Cascade)
+
+  name        String  // "fullpaper", "news", etc
+  displayName String  // "Full Edition", "News Section", etc
+  order       Int     // Display order
+
+  // Relations
+  pages       Page[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([editionId, name])
+}
+
+// Page - Represents individual pages in a section
+model Page {
+  id        String   @id @default(cuid())
+  sectionId String
+  section   Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  pageNumber Int    // Page number within section
+  imageUrl   String // URL to page image
+
+  // Optional metadata
+  title      String?
+  description String?
+
+  // Relations
+  articles   Article[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([sectionId, pageNumber])
+}
+
+// EditionImage - Stores images for an edition
+model EditionImage {
+  id        String   @id @default(cuid())
+  editionId String
+  edition   Edition  @relation(fields: [editionId], references: [id], onDelete: Cascade)
+
+  filename  String   // Original filename
+  imageUrl  String   // URL/path to image
+  pageNumber Int     // Which page this image is
+
+  createdAt DateTime @default(now())
+}
+
+// Article - Represents articles that can be extracted from pages
+model Article {
+  id        String   @id @default(cuid())
+  pageId    String
+  page      Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  title     String
+  content   String?
+  author    String?
+
+  // For highlighting on page
+  coordinates Json?  // {x, y, width, height}
+
+  createdAt DateTime @default(now())
+}
+
+// User - For future authentication
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String?
+
+  // Preferences
+  theme     String   @default("light")
+
+  // Relations
+  bookmarks Bookmark[]
+  readHistory ReadHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Bookmark - User bookmarks
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  pageId    String
+
+  createdAt DateTime @default(now())
+}
+
+// ReadHistory - Track what user has read
+model ReadHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  editionId String
+  duration  Int      // Time spent in seconds
+
+  createdAt DateTime @default(now())
+}
