@@ -1,31 +1,32 @@
-import type { Metadata } from "next"
-import { JetBrains_Mono, Inter } from "next/font/google"
+import type { Metadata, Viewport } from "next"
+import { Geist, Geist_Mono } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/sonner"
 import "./globals.css"
 
-// Lyra style uses monospace-friendly fonts
-const jetbrainsMono = JetBrains_Mono({
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
-  variable: "--font-mono",
 })
 
-const inter = Inter({
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
-  variable: "--font-sans",
 })
 
 export const metadata: Metadata = {
-  title: "E-Paper Viewer | Digital Newspaper Experience",
-  description:
-    "Modern digital newspaper reading experience with realistic page-flip animations, dark mode, and crisp UI design.",
-  keywords: ["e-paper", "newspaper", "digital reader", "page flip", "news"],
-  authors: [{ name: "E-Paper Team" }],
-  openGraph: {
-    title: "E-Paper Viewer",
-    description: "Modern digital newspaper reading experience",
-    type: "website",
-  },
+  title: "E-Paper Viewer",
+  description: "Digital newspaper reading experience",
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
 }
 
 export default function RootLayout({
@@ -36,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
       >
         <ThemeProvider
           attribute="class"
@@ -45,7 +46,6 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
-          <Toaster />
         </ThemeProvider>
       </body>
     </html>
